@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LWC Material • Educational Resource Portal</title>
+  
+  <meta name="theme-color" content="#020617">
+  <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1xV-8qRtfqs0OzAc6AnhYc-jMmhj7v67H">
+  <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1xV-8qRtfqs0OzAc6AnhYc-jMmhj7v67H">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Tailwind CSS & FontAwesome Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(circle at 50% -20%, #1e1b4b 0%, #020617 75%);
+      background-attachment: fixed;
+    }
+
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+      background: rgba(30, 41, 59, 0.85);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px -10px rgba(99, 102, 241, 0.25);
+    }
+
+    .no-select {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #020617;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col antialiased">
+
+  <!-- Glow Background Accent -->
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-indigo-600/10 blur-[120px] pointer-events-none -z-10 rounded-full"></div>
+
+  <!-- AUTH MODAL CONTAINER (Overlay) -->
+  <div id="authOverlay" class="fixed inset-0 bg-slate-950/90 backdrop-blur-2xl z-50 flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-md p-6 sm:p-8 rounded-3xl shadow-2xl relative border border-slate-800">
+      
+      <!-- Logo Header -->
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center p-2 shadow-lg">
+          <img src="https://lh3.googleusercontent.com/d/1xV-8qRtfqs0OzAc6AnhYc-jMmhj7v67H" 
+               alt="LWC Logo" 
+               class="w-full h-full object-contain"
+               onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=LWC&background=6366f1&color=fff&bold=true';">
+        </div>
+        <h2 class="text-2xl font-bold text-white tracking-tight">LWC Material</h2>
+        <p class="text-xs text-indigo-300 mt-1">Student & Educator Access Portal</p>
+      </div>
+
+      <!-- Alert Message Box -->
+      <div id="authAlert" class="hidden mb-4 p-3.5 rounded-xl text-xs font-semibold"></div>
+
+      <!-- LOGIN FORM -->
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1.5">Email Address</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope absolute left-3.5 top-3.5 text-slate-500 text-xs"></i>
+            <input type="email" id="loginEmail" required placeholder="student@example.com" 
+                   class="w-full pl-10 pr-4 py-2.5 bg-slate-900/80 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1.5">Password</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-500 text-xs"></i>
+            <input type="password" id="loginPassword" required placeholder="••••••••" 
+                   class="w-full pl-10 pr-10 py-2.5 bg-slate-900/80 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
+            <button type="button" onclick="togglePassword('loginPassword', 'loginEye')" class="absolute right-3.5 top-3 text-slate-400 hover:text-indigo-400 text-xs focus:outline-none p-0.5 transition" title="Toggle password visibility">
+              <i id="loginEye" class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex justify-end items-center text-xs">
+          <button type="button" onclick="showForm('forgot')" class="text-indigo-400 hover:text-indigo-300 font-medium transition">Forgot password?</button>
+        </div>
+
+        <button type="submit" id="loginBtn" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white rounded-xl text-xs font-bold transition duration-200 shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2">
+          <span>Sign In</span>
+        </button>
+
+        <p class="text-center text-xs text-slate-400 mt-4">
+          Don't have an account? <button type="button" onclick="showForm('signup')" class="text-indigo-400 font-semibold hover:underline">Register</button>
+        </p>
+      </form>
+
+      <!-- SIGNUP FORM -->
+      <form id="signupForm" onsubmit="handleSignup(event)" class="space-y-4 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1.5">Full Name</label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3.5 top-3.5 text-slate-500 text-xs"></i>
+            <input type="text" id="signupName" required placeholder="Your Full Name" 
+                   class="w-full pl-10 pr-4 py-2.5 bg-slate-900/80 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1.5">Email Address</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope absolute left-3.5 top-3.5 text-slate-500 text-xs"></i>
+            <input type="email" id="signupEmail" required placeholder="student@example.com" 
+                   class="w-full pl-10 pr-4 py-2.5 bg-slate-900/80 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1.5">Create Password</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-500 text-xs"></i>
+            <input type="password" id="signupPassword" minlength="6" required placeholder="Min 6 characters" 
+                   class="w-full pl-10 pr-10 py-2.5 bg-slate-900/80 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
+            <button type="button" onclick="togglePassword('signupPassword', 'signupEye')" class="absolute right-3.5 top-3 text-slate-400 hover:text-indigo-400 text-xs focus:outline-none p-0.5 transition" title="Toggle password visibility">
+              <i id="signupEye" class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="signupBtn" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-xl text-xs font-bold transition duration-200 shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2">
+          <span>Create Account</span>
+        </button>
+
+        <p class="text-center text-xs text-slate-400 mt-4">
+          Already registered? <button type="button" onclick="showForm('login')" class="text-indigo-400 font-semibold hover:underline">Sign In</button>
+        </p>
+      </form>
+
+      <!-- FORGOT PASSWORD FORM -->
+      <form id="forgotForm" onsubmit="handleForgot(event)" class="space-y-4 hidden">
+        <p class="text-xs text-slate-400 mb-2 leading-relaxed">Enter your registered email address and we'll send you a link to reset your password.</p>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1.5">Email Address</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope absolute left-3.5 top-3.5 text-slate-500 text-xs"></i>
+            <input type="email" id="forgotEmail" required placeholder="student@example.com" 
+                   class="w-full pl-10 pr-4 py-2.5 bg-slate-900/80 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
+          </div>
+        </div>
+
+        <button type="submit" id="forgotBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
+          <span>Send Reset Link</span>
+        </button>
+
+        <p class="text-center text-xs text-slate-400 mt-4">
+          Back to <button type="button" onclick="showForm('login')" class="text-indigo-400 font-semibold hover:underline">Sign In</button>
+        </p>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- MAIN PORTAL HEADER -->
+  <header class="border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-xl sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      
+      <!-- Logo & Title -->
+      <div class="flex items-center space-x-4 cursor-pointer group select-none" onclick="navigateToRoot()">
+        <div class="relative">
+          <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-30 group-hover:opacity-75 transition duration-300"></div>
+          <div class="relative w-12 h-12 rounded-2xl overflow-hidden border border-slate-700/60 bg-slate-900 flex items-center justify-center p-1.5 shadow-xl">
+            <img src="https://lh3.googleusercontent.com/d/1xV-8qRtfqs0OzAc6AnhYc-jMmhj7v67H" 
+                 alt="LWC Logo" 
+                 class="w-full h-full object-contain"
+                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=LWC&background=6366f1&color=fff&bold=true';">
+          </div>
+        </div>
+        <div>
+          <h1 class="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+            LWC Material <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Portal</span>
+          </h1>
+          <p class="text-xs text-slate-400 font-medium">Learn With Chadhar • Educational Resource Portal</p>
+        </div>
+      </div>
+
+      <!-- Controls: Search + User Profile / Logout -->
+      <div class="flex items-center gap-3 w-full sm:w-auto justify-end flex-wrap">
+        <div class="relative w-full sm:w-72">
+          <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 text-sm"></i>
+          <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Search topics or materials..." 
+                 class="w-full pl-11 pr-4 py-2.5 bg-slate-900/80 border border-slate-800 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-inner">
+        </div>
+
+        <!-- User Profile Badge -->
+        <div id="userBadge" class="hidden items-center gap-2 bg-slate-900/80 border border-slate-800 px-3 py-2 rounded-2xl text-xs font-medium text-slate-300">
+          <i class="fa-solid fa-circle-user text-indigo-400 text-sm"></i>
+          <span id="userEmailSpan" class="max-w-[120px] truncate"></span>
+        </div>
+
+        <!-- User Logout Control -->
+        <button onclick="handleLogout()" class="px-3.5 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-2xl text-xs font-bold transition flex items-center gap-2">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full">
+
+    <!-- Navigation Bar: Back/Forward + Breadcrumb -->
+    <div class="flex items-center gap-3 mb-8">
+      <div class="flex items-center gap-1 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800/80 shadow-md flex-shrink-0">
+        <button id="navBackBtn" onclick="navigateBack()" disabled 
+                class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400 rounded-xl hover:bg-slate-800 transition" title="Back">
+          <i class="fa-solid fa-arrow-left text-sm"></i>
+        </button>
+        <button id="navForwardBtn" onclick="navigateForward()" disabled 
+                class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400 rounded-xl hover:bg-slate-800 transition" title="Forward">
+          <i class="fa-solid fa-arrow-right text-sm"></i>
+        </button>
+      </div>
+
+      <nav class="flex-1 flex items-center space-x-2 bg-slate-900/40 px-4 py-2.5 rounded-2xl border border-slate-800/60 text-sm overflow-x-auto whitespace-nowrap shadow-sm" id="breadcrumbBar">
+      </nav>
+    </div>
+
+    <!-- Directory Title Header -->
+    <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <h2 id="currentFolderTitle" class="text-xl sm:text-2xl font-bold text-white flex items-center gap-3">
+          <span class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"><i class="fa-solid fa-shapes text-base"></i></span> Educational Boards
+        </h2>
+        <span id="itemsCounter" class="text-xs font-semibold text-slate-400 bg-slate-900/80 px-3.5 py-1.5 rounded-full border border-slate-800">0 Items</span>
+      </div>
+    </div>
+
+    <!-- Explorer Grid Layout -->
+    <div id="explorerGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+      <div class="col-span-full text-center py-20 text-slate-400">
+        <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4 text-indigo-500"></i>
+        <p class="text-sm font-medium">Loading hierarchical index...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Viewer Modal (Protected Read-Only View) -->
+  <div id="viewerModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-50 hidden flex flex-col p-2 sm:p-6 no-select" oncontextmenu="return false;">
+    <div class="bg-slate-900/90 border border-slate-800 rounded-t-2xl px-6 py-4 flex items-center justify-between shadow-xl">
+      <div class="flex items-center space-x-3.5 min-w-0">
+        <div class="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20 flex-shrink-0">
+          <i class="fa-solid fa-book-open text-lg"></i>
+        </div>
+        <div class="min-w-0">
+          <h3 id="modalTitle" class="font-bold text-white text-base sm:text-lg truncate max-w-xs sm:max-w-lg">Document Viewer</h3>
+          <p class="text-xs text-emerald-400 font-medium flex items-center gap-1.5 mt-0.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Protected Read Online Mode
+          </p>
+        </div>
+      </div>
+
+      <button onclick="closeViewerModal()" class="text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-700 px-4 py-2 rounded-xl transition text-xs font-semibold flex items-center gap-2 border border-slate-700/50 flex-shrink-0" title="Close (Esc)">
+        Close <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+    
+    <div class="flex-1 bg-slate-900 rounded-b-2xl border-x border-b border-slate-800 overflow-hidden relative shadow-2xl">
+      <iframe id="driveFrame" class="w-full h-full border-none bg-white" src="" allow="autoplay"></iframe>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/60 py-6 text-center text-xs text-slate-500 mt-auto">
+    <p>© LWC Material • Educational Resource Portal • Learn With Chadhar</p>
+  </footer>
+
+  <script>
+    // ==========================================
+    // 1. SUPABASE CONFIGURATION
+    // ==========================================
+    const SUPABASE_URL = 'https://gwtmmylgkrlaofvleltt.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_-2Kq5DSvdDJzObOn5RNzgQ_Vci8TTXM';
+    
+    // Safely initialize Supabase client (prevents TDZ variable shadowing error)
+    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwhanqVEIXiFxYORZZ2kIV3kmv6jMgcb1b_565j4jxOaDI18folZoQRYuFZeyFE-bfayQ/exec';
+
+    let treeData = {};
+    let historyStack = [[]];
+    let historyIndex = 0;
+
+    // Toggle Password Visibility
+    function togglePassword(inputId, eyeId) {
+      const input = document.getElementById(inputId);
+      const eye = document.getElementById(eyeId);
+      if (!input || !eye) return;
+      if (input.type === "password") {
+        input.type = "text";
+        eye.classList.remove("fa-eye");
+        eye.classList.add("fa-eye-slash");
+      } else {
+        input.type = "password";
+        eye.classList.remove("fa-eye-slash");
+        eye.classList.add("fa-eye");
+      }
+    }
+
+    // Block Print & Save Keyboard Shortcuts (Ctrl+P, Ctrl+S) and allow Escape for modal
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 's')) {
+        e.preventDefault();
+        alert('Downloading or Printing is disabled for protected materials.');
+      }
+      if (e.key === 'Escape') {
+        closeViewerModal();
+      }
+    });
+
+    // ==========================================
+    // 2. AUTHENTICATION CONTROLLER (PAGE PROTECTION)
+    // ==========================================
+    const checkUserSession = async () => {
+      if (!supabaseClient) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        
+        // Agar session nahi hai (yani user login nahi hai)
+        if (!session) {
+          // Foran login page par wapas bhej do
+          window.location.href = 'login.html'; 
+          return;
+        }
+
+        // Agar user login hai to portal data load karo
+        const authOverlay = document.getElementById('authOverlay');
+        if (authOverlay) authOverlay.classList.add('hidden');
+        if (session.user) updateUserHeader(session.user);
+        loadDirectoryData();
+
+      } catch (err) {
+        console.error("Session verification error:", err);
+        window.location.href = 'login.html';
+      }
+    };
+
+    function updateUserHeader(user) {
+      const userBadge = document.getElementById('userBadge');
+      const emailSpan = document.getElementById('userEmailSpan');
+      if (userBadge && emailSpan && user) {
+        emailSpan.innerText = user.user_metadata?.full_name || user.email || 'User';
+        userBadge.classList.remove('hidden');
+        userBadge.classList.add('flex');
+      }
+    }
+
+    function showAlert(msg, isError = true) {
+      const alertBox = document.getElementById('authAlert');
+      alertBox.className = `mb-4 p-3.5 rounded-xl text-xs font-semibold ${isError ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`;
+      alertBox.innerText = msg;
+      alertBox.classList.remove('hidden');
+    }
+
+    function showForm(type) {
+      document.getElementById('authAlert').classList.add('hidden');
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('signupForm').classList.add('hidden');
+      document.getElementById('forgotForm').classList.add('hidden');
+
+      if (type === 'login') document.getElementById('loginForm').classList.remove('hidden');
+      if (type === 'signup') document.getElementById('signupForm').classList.remove('hidden');
+      if (type === 'forgot') document.getElementById('forgotForm').classList.remove('hidden');
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const btn = document.getElementById('loginBtn');
+
+      if (!supabaseClient) {
+        showAlert("Authentication service unavailable.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Signing in...</span>`;
+
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) {
+          showAlert(error.message);
+        } else {
+          document.getElementById('authOverlay').classList.add('hidden');
+          updateUserHeader(data.user);
+          loadDirectoryData();
+        }
+      } catch (err) {
+        showAlert("An unexpected error occurred. Please try again.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Sign In</span>`;
+      }
+    }
+
+    async function handleSignup(e) {
+      e.preventDefault();
+      const name = document.getElementById('signupName').value.trim();
+      const email = document.getElementById('signupEmail').value.trim();
+      const password = document.getElementById('signupPassword').value;
+      const btn = document.getElementById('signupBtn');
+
+      if (!supabaseClient) {
+        showAlert("Authentication service unavailable.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Creating account...</span>`;
+
+      try {
+        const { data, error } = await supabaseClient.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: name } }
+        });
+
+        if (error) {
+          showAlert(error.message);
+        } else {
+          // 1. Foran user ko sign out karwa dein taake session khatam ho jaye
+          await supabaseClient.auth.signOut();
+
+          // 2. Success message & alert
+          alert("Account successfully ban gaya hai! Ab aap apni email aur password se login karein.");
+
+          // 3. Login page par redirect karein
+          window.location.href = 'login.html';
+        }
+      } catch (err) {
+        showAlert("An unexpected error occurred. Please try again.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Create Account</span>`;
+      }
+    }
+
+    async function handleForgot(e) {
+      e.preventDefault();
+      const email = document.getElementById('forgotEmail').value.trim();
+      const btn = document.getElementById('forgotBtn');
+
+      if (!supabaseClient) {
+        showAlert("Authentication service unavailable.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Sending...</span>`;
+
+      try {
+        const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email);
+        if (error) {
+          showAlert(error.message);
+        } else {
+          showAlert('Password reset link has been sent to your email address.', false);
+        }
+      } catch (err) {
+        showAlert("An unexpected error occurred. Please try again.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Send Reset Link</span>`;
+      }
+    }
+
+    async function handleLogout() {
+      if (supabaseClient) {
+        await supabaseClient.auth.signOut();
+      }
+      window.location.href = 'login.html';
+    }
+
+    // ==========================================
+    // 3. RESOURCE DIRECTORY LOGIC
+    // ==========================================
+    function getCategoryIcon(title) {
+      const name = String(title).toLowerCase();
+      if (name.includes('federal')) return { icon: 'fa-building-columns', color: 'from-blue-500/20 to-indigo-500/10 text-blue-400 border-blue-500/20' };
+      if (name.includes('punjab')) return { icon: 'fa-landmark', color: 'from-amber-500/20 to-orange-500/10 text-amber-400 border-amber-500/20' };
+      if (name.includes('textbook') || name.includes('book') || name.includes('chapter')) {
+        return { icon: 'fa-book-bookmark', color: 'from-blue-500/20 to-indigo-500/10 text-blue-400 border-blue-500/20' };
+      }
+      if (name.includes('poetry') || name.includes('poem') || name.includes('verse')) {
+        return { icon: 'fa-feather-pointed', color: 'from-purple-500/20 to-pink-500/10 text-purple-400 border-purple-500/20' };
+      }
+      if (name.includes('grammar') || name.includes('tense') || name.includes('speech')) {
+        return { icon: 'fa-spell-check', color: 'from-emerald-500/20 to-teal-500/10 text-emerald-400 border-emerald-500/20' };
+      }
+      if (name.includes('composition') || name.includes('writing') || name.includes('essay') || name.includes('letter')) {
+        return { icon: 'fa-pen-nib', color: 'from-amber-500/20 to-orange-500/10 text-amber-400 border-amber-500/20' };
+      }
+      return { icon: 'fa-layer-group', color: 'from-indigo-500/20 to-violet-500/10 text-indigo-400 border-indigo-500/20' };
+    }
+
+    function getItemSpecificIcon(title) {
+      const name = String(title).toLowerCase();
+      if (name.includes('application')) return 'fa-file-signature';
+      if (name.includes('letter')) return 'fa-envelope-open-text';
+      if (name.includes('dialogue')) return 'fa-comments';
+      if (name.includes('paragraph')) return 'fa-align-left';
+      if (name.includes('essay')) return 'fa-pen-fancy';
+      if (name.includes('narrative')) return 'fa-book-open-reader';
+      if (name.includes('report')) return 'fa-file-lines';
+      if (name.includes('story') || name.includes('stories')) return 'fa-book-journal-whills';
+      if (name.includes('summary') || name.includes('summaries')) return 'fa-list-check';
+      if (name.includes('translation')) return 'fa-language';
+      if (name.includes('grammar') || name.includes('tense') || name.includes('verb') || name.includes('noun') || name.includes('pronoun') || name.includes('adverb') || name.includes('preposition')) return 'fa-spell-check';
+      if (name.includes('poem') || name.includes('poetry') || name.includes('verse')) return 'fa-feather';
+      
+      return 'fa-file-lines';
+    }
+
+    function isUrl(val) {
+      if (!val) return false;
+      const str = String(val).trim();
+      return str.length > 5 && (str.toLowerCase().startsWith('http://') || str.toLowerCase().startsWith('https://'));
+    }
+
+    function cleanTitle(text) {
+      if (!text) return '';
+      return String(text).replace(/^\d+[A-Z]?\.\s*/, '').trim();
+    }
+
+    async function loadDirectoryData() {
+      try {
+        let response = await fetch(API_URL + '?v=' + new Date().getTime());
+        let rows = await response.json();
+        buildDirectoryTree(rows);
+        renderExplorer();
+      } catch (err) {
+        console.error("API Fetch Error:", err);
+        document.getElementById('explorerGrid').innerHTML = `
+          <div class="col-span-full text-center py-20 text-rose-400">
+            <i class="fa-solid fa-triangle-exclamation text-4xl mb-3"></i>
+            <p class="font-semibold text-base">Unable to load resources</p>
+            <p class="text-xs text-slate-400 mt-1">Please refresh the page to try again.</p>
+          </div>`;
+      }
+    }
+
+    // Dynamic Multi-Tier Parser: Boards ➔ Sections ➔ Classes/Subfolders ➔ Materials
+    function buildDirectoryTree(rows) {
+      treeData = {};
+      if (!rows || rows.length === 0) return;
+
+      let currentBoard = 'Federal Board Data';
+      let currentSection = '';
+      let currentSub = '';
+
+      rows.forEach(row => {
+        if (!row || row.length === 0) return;
+
+        const col1 = row[1] ? cleanTitle(row[1]) : '';
+        const col2 = row[2] ? cleanTitle(row[2]) : '';
+        const col3 = row[3] ? cleanTitle(row[3]) : '';
+        const col4 = row[4] ? cleanTitle(row[4]) : '';
+
+        // Find URL anywhere in row
+        let link = '';
+        row.forEach(cell => {
+          if (!link && cell && isUrl(cell)) {
+            link = String(cell).trim();
+          }
+        });
+
+        // 1. Board detection (Col 1)
+        if (col1 && (col1.includes('Board') || col1.includes('Data'))) {
+          currentBoard = col1;
+          currentSection = '';
+          currentSub = '';
+          if (!treeData[currentBoard]) treeData[currentBoard] = { sections: {} };
+        }
+
+        if (!treeData[currentBoard]) treeData[currentBoard] = { sections: {} };
+
+        // 2. Section detection (Col 2)
+        if (col2 && (col2.includes('Section') || col2.includes('Composition') || col2.includes('Grammar') || col2.includes('Textbook') || col2.includes('Poetry'))) {
+          currentSection = col2;
+          currentSub = '';
+          if (!treeData[currentBoard].sections[currentSection]) {
+            treeData[currentBoard].sections[currentSection] = { subfolders: {}, files: [] };
+          }
+        }
+
+        if (currentSection && !treeData[currentBoard].sections[currentSection]) {
+          treeData[currentBoard].sections[currentSection] = { subfolders: {}, files: [] };
+        }
+
+        // 3. Class or Direct Topic in Col 3
+        if (col3) {
+          if (col3.toLowerCase().includes('class') || col3.toLowerCase().includes('common poems')) {
+            currentSub = col3;
+            if (currentSection) {
+              if (!treeData[currentBoard].sections[currentSection].subfolders[currentSub]) {
+                treeData[currentBoard].sections[currentSection].subfolders[currentSub] = { files: [] };
+              }
+            }
+          } else if (link && !col4 && currentSection) {
+            // Direct item under currentSection (e.g. Grammar topics, Composition topics)
+            treeData[currentBoard].sections[currentSection].files.push({
+              title: col3,
+              link: link
+            });
+            return;
+          }
+        }
+
+        // 4. Chapter / Lesson Title in Col 4
+        if (col4 && currentSection) {
+          if (currentSub) {
+            if (!treeData[currentBoard].sections[currentSection].subfolders[currentSub]) {
+              treeData[currentBoard].sections[currentSection].subfolders[currentSub] = { files: [] };
+            }
+            treeData[currentBoard].sections[currentSection].subfolders[currentSub].files.push({
+              title: col4,
+              link: link
+            });
+          } else {
+            treeData[currentBoard].sections[currentSection].files.push({
+              title: col4,
+              link: link
+            });
+          }
+        }
+      });
+    }
+
+    function currentPath() {
+      return historyStack[historyIndex] || [];
+    }
+
+    function pushNavigation(newPath) {
+      historyStack = historyStack.slice(0, historyIndex + 1);
+      historyStack.push(newPath);
+      historyIndex = historyStack.length - 1;
+      renderExplorer();
+    }
+
+    function navigateBack() {
+      if (historyIndex > 0) {
+        historyIndex--;
+        renderExplorer();
+      }
+    }
+
+    function navigateForward() {
+      if (historyIndex < historyStack.length - 1) {
+        historyIndex++;
+        renderExplorer();
+      }
+    }
+
+    function navigateToRoot() {
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) searchInput.value = '';
+      pushNavigation([]);
+    }
+
+    function navigateToPathIndex(idx) {
+      const targetPath = currentPath().slice(0, idx + 1);
+      pushNavigation(targetPath);
+    }
+
+    function openFolder(folderName) {
+      const newPath = [...currentPath(), folderName];
+      pushNavigation(newPath);
+    }
+
+    function updateNavButtons() {
+      const backBtn = document.getElementById('navBackBtn');
+      const forwardBtn = document.getElementById('navForwardBtn');
+      if (backBtn) backBtn.disabled = (historyIndex <= 0);
+      if (forwardBtn) forwardBtn.disabled = (historyIndex >= historyStack.length - 1);
+    }
+
+    function renderBreadcrumbs() {
+      const nav = document.getElementById('breadcrumbBar');
+      const stack = currentPath();
+      let html = `
+        <button onclick="navigateToRoot()" class="text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-2 transition flex-shrink-0">
+          <i class="fa-solid fa-house text-xs"></i> Main
+        </button>
+      `;
+
+      stack.forEach((folder, index) => {
+        html += `<span class="text-slate-600 flex-shrink-0"><i class="fa-solid fa-chevron-right text-[10px]"></i></span>`;
+        if (index === stack.length - 1) {
+          html += `<span class="text-slate-200 font-bold flex-shrink-0">${folder}</span>`;
+        } else {
+          html += `
+            <button onclick="navigateToPathIndex(${index})" class="text-indigo-400 hover:text-indigo-300 transition font-medium flex-shrink-0">
+              ${folder}
+            </button>
+          `;
+        }
+      });
+
+      nav.innerHTML = html;
+      updateNavButtons();
+    }
+
+    function renderExplorer() {
+      renderBreadcrumbs();
+      const grid = document.getElementById('explorerGrid');
+      grid.innerHTML = '';
+      const path = currentPath();
+
+      // Root Level: List Boards
+      if (path.length === 0) {
+        document.getElementById('currentFolderTitle').innerHTML = `
+          <span class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"><i class="fa-solid fa-shapes text-base"></i></span> Educational Boards`;
+        
+        const boards = Object.keys(treeData);
+        document.getElementById('itemsCounter').innerText = `${boards.length} Boards`;
+
+        boards.forEach(boardName => {
+          const sections = treeData[boardName]?.sections || {};
+          let totalFiles = 0;
+          Object.keys(sections).forEach(sec => {
+            const s = sections[sec];
+            if (s.files) totalFiles += s.files.filter(f => isUrl(f.link)).length;
+            if (s.subfolders) {
+              Object.keys(s.subfolders).forEach(sub => {
+                if (s.subfolders[sub]?.files) {
+                  totalFiles += s.subfolders[sub].files.filter(f => isUrl(f.link)).length;
+                }
+              });
+            }
+          });
+          const hasData = totalFiles > 0;
+          const categoryTheme = getCategoryIcon(boardName);
+
+          const statusBadge = hasData 
+            ? `<span class="text-[11px] font-semibold px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-[10px]"></i> ${totalFiles} Available</span>`
+            : `<span class="text-[11px] font-semibold px-2.5 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-lg flex items-center gap-1.5"><i class="fa-solid fa-clock text-[10px]"></i> Coming Soon</span>`;
+
+          const card = document.createElement('div');
+          card.className = "glass-card p-5 rounded-2xl cursor-pointer flex items-center justify-between group";
+          card.onclick = () => openFolder(boardName);
+          card.innerHTML = `
+            <div class="flex items-center space-x-4 min-w-0">
+              <div class="p-3.5 bg-gradient-to-br ${categoryTheme.color} rounded-2xl border ${categoryTheme.color.split(' ')[2]} group-hover:scale-105 transition duration-300 flex-shrink-0">
+                <i class="fa-solid ${categoryTheme.icon} text-2xl"></i>
+              </div>
+              <div class="min-w-0">
+                <h4 class="font-bold text-slate-100 group-hover:text-indigo-400 transition text-base leading-snug truncate">${boardName}</h4>
+                <div class="mt-1.5">${statusBadge}</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-arrow-right-long text-slate-600 group-hover:text-indigo-400 group-hover:translate-x-1 transition duration-300 flex-shrink-0 ml-2"></i>
+          `;
+          grid.appendChild(card);
+        });
+        return;
+      }
+
+      // Level 1: Sections inside selected Board
+      if (path.length === 1) {
+        const boardName = path[0];
+        const categoryTheme = getCategoryIcon(boardName);
+
+        document.getElementById('currentFolderTitle').innerHTML = `
+          <span class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"><i class="fa-solid ${categoryTheme.icon} text-base"></i></span> ${boardName}`;
+        
+        const sections = treeData[boardName]?.sections || {};
+        const secKeys = Object.keys(sections);
+        document.getElementById('itemsCounter').innerText = `${secKeys.length} Sections`;
+
+        if (secKeys.length === 0) {
+          grid.innerHTML = `
+            <div class="col-span-full glass-card rounded-2xl p-12 text-center">
+              <div class="w-16 h-16 mx-auto mb-4 bg-amber-500/10 rounded-2xl border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl">
+                <i class="fa-solid fa-hourglass-half"></i>
+              </div>
+              <h3 class="text-lg font-bold text-white mb-1">Material Under Compilation</h3>
+              <p class="text-xs text-slate-400 max-w-sm mx-auto">Resources for ${boardName} are currently being compiled and will be available shortly.</p>
+            </div>`;
+          return;
+        }
+
+        secKeys.forEach(secName => {
+          const s = sections[secName];
+          let validPdfCount = (s.files || []).filter(f => isUrl(f.link)).length;
+          if (s.subfolders) {
+            Object.keys(s.subfolders).forEach(sub => {
+              validPdfCount += (s.subfolders[sub]?.files || []).filter(f => isUrl(f.link)).length;
+            });
+          }
+          const hasData = validPdfCount > 0;
+          const secTheme = getCategoryIcon(secName);
+
+          const statusBadge = hasData 
+            ? `<span class="text-[11px] font-semibold px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-[10px]"></i> ${validPdfCount} Available</span>`
+            : `<span class="text-[11px] font-semibold px-2.5 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-lg flex items-center gap-1.5"><i class="fa-solid fa-clock text-[10px]"></i> Coming Soon</span>`;
+
+          const card = document.createElement('div');
+          card.className = "glass-card p-5 rounded-2xl cursor-pointer flex items-center justify-between group";
+          card.onclick = () => openFolder(secName);
+          card.innerHTML = `
+            <div class="flex items-center space-x-4 min-w-0">
+              <div class="p-3.5 bg-gradient-to-br ${secTheme.color} rounded-2xl border ${secTheme.color.split(' ')[2]} group-hover:scale-105 transition duration-300 flex-shrink-0">
+                <i class="fa-solid ${secTheme.icon} text-2xl"></i>
+              </div>
+              <div class="min-w-0">
+                <h4 class="font-bold text-slate-100 group-hover:text-indigo-400 transition text-base leading-snug truncate">${secName}</h4>
+                <div class="mt-1.5">${statusBadge}</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-arrow-right-long text-slate-600 group-hover:text-indigo-400 group-hover:translate-x-1 transition duration-300 flex-shrink-0 ml-2"></i>
+          `;
+          grid.appendChild(card);
+        });
+        return;
+      }
+
+      // Level 2: Subfolders / Classes OR Direct Files inside Section
+      if (path.length === 2) {
+        const boardName = path[0];
+        const secName = path[1];
+        const secData = treeData[boardName]?.sections?.[secName] || {};
+        const subfolders = secData.subfolders || {};
+        const subKeys = Object.keys(subfolders);
+        const directFiles = secData.files || [];
+
+        const secTheme = getCategoryIcon(secName);
+        document.getElementById('currentFolderTitle').innerHTML = `
+          <span class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"><i class="fa-solid ${secTheme.icon} text-base"></i></span> ${secName}`;
+
+        // If Section has subfolders (like Class IX, Class X, etc.)
+        if (subKeys.length > 0) {
+          document.getElementById('itemsCounter').innerText = `${subKeys.length} Categories`;
+          subKeys.forEach(subName => {
+            const files = subfolders[subName]?.files || [];
+            const validPdfCount = files.filter(f => isUrl(f.link)).length;
+            const hasData = validPdfCount > 0;
+
+            const statusBadge = hasData 
+              ? `<span class="text-[11px] font-semibold px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-[10px]"></i> ${validPdfCount} Available</span>`
+              : `<span class="text-[11px] font-semibold px-2.5 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-lg flex items-center gap-1.5"><i class="fa-solid fa-clock text-[10px]"></i> Coming Soon</span>`;
+
+            const card = document.createElement('div');
+            card.className = "glass-card p-5 rounded-2xl cursor-pointer flex items-center justify-between group";
+            card.onclick = () => openFolder(subName);
+            card.innerHTML = `
+              <div class="flex items-center space-x-4 min-w-0">
+                <div class="p-3.5 bg-gradient-to-br from-indigo-500/20 to-purple-500/10 rounded-2xl border border-indigo-500/20 text-indigo-400 group-hover:scale-105 transition duration-300 flex-shrink-0">
+                  <i class="fa-solid fa-cubes text-2xl"></i>
+                </div>
+                <div class="min-w-0">
+                  <h4 class="font-bold text-slate-100 group-hover:text-indigo-400 transition text-base leading-snug truncate">${subName}</h4>
+                  <div class="mt-1.5">${statusBadge}</div>
+                </div>
+              </div>
+              <i class="fa-solid fa-arrow-right-long text-slate-600 group-hover:text-indigo-400 group-hover:translate-x-1 transition duration-300 flex-shrink-0 ml-2"></i>
+            `;
+            grid.appendChild(card);
+          });
+          return;
+        }
+
+        // Direct Files in Section (e.g. Grammar Section, Composition)
+        renderFileList(directFiles);
+        return;
+      }
+
+      // Level 3: Files inside Subfolder (e.g. Class IX chapters)
+      if (path.length === 3) {
+        const boardName = path[0];
+        const secName = path[1];
+        const subName = path[2];
+
+        document.getElementById('currentFolderTitle').innerHTML = `
+          <span class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"><i class="fa-solid fa-file-lines text-base"></i></span> ${subName}`;
+
+        const fileList = treeData[boardName]?.sections?.[secName]?.subfolders?.[subName]?.files || [];
+        renderFileList(fileList);
+      }
+    }
+
+    function renderFileList(fileList) {
+      const grid = document.getElementById('explorerGrid');
+      grid.innerHTML = '';
+      document.getElementById('itemsCounter').innerText = `${fileList.length} Materials`;
+
+      if (!fileList || fileList.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full glass-card rounded-2xl p-12 text-center">
+            <div class="w-16 h-16 mx-auto mb-4 bg-amber-500/10 rounded-2xl border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl">
+              <i class="fa-solid fa-hourglass-half"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-1">Material Under Compilation</h3>
+            <p class="text-xs text-slate-400 max-w-sm mx-auto">This section will be updated with study notes shortly.</p>
+          </div>`;
+        return;
+      }
+
+      fileList.forEach(file => {
+        const isAvailable = isUrl(file.link);
+        const itemIcon = getItemSpecificIcon(file.title);
+
+        const statusBadge = isAvailable 
+          ? `<span class="text-xs font-semibold px-2.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span> PDF Ready
+            </span>`
+          : `<span class="text-xs font-semibold px-2.5 py-1 bg-amber-500/10 text-amber-400 rounded-lg border border-amber-500/20 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span> Pending
+            </span>`;
+
+        const card = document.createElement('div');
+        card.className = "glass-card p-5 rounded-2xl flex flex-col justify-between";
+
+        if (isAvailable) {
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                ${statusBadge}
+                <div class="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shadow-sm">
+                  <i class="fa-solid ${itemIcon} text-sm"></i>
+                </div>
+              </div>
+              <h4 class="font-bold text-slate-100 text-base leading-snug">${file.title}</h4>
+            </div>
+            <div class="mt-5">
+              <button type="button" class="read-btn w-full py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white rounded-xl text-xs font-bold transition duration-200 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/25">
+                <i class="fa-solid fa-book-open"></i> Read Online
+              </button>
+            </div>
+          `;
+          card.querySelector('.read-btn').onclick = () => openInModal(file.title, file.link);
+        } else {
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                ${statusBadge}
+                <div class="w-9 h-9 rounded-xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center text-slate-500">
+                  <i class="fa-solid ${itemIcon} text-sm"></i>
+                </div>
+              </div>
+              <h4 class="font-bold text-slate-400 text-base leading-snug">${file.title}</h4>
+            </div>
+            <div class="mt-5 p-2.5 bg-slate-900/60 rounded-xl text-center text-xs text-slate-500 font-medium border border-slate-800">
+              PDF file uploading soon
+            </div>
+          `;
+        }
+
+        grid.appendChild(card);
+      });
+    }
+
+    function getEmbeddedDriveUrl(url) {
+      if (!url) return '';
+      if (url.includes('/file/d/')) {
+        const fileId = url.split('/file/d/')[1].split('/')[0].split('?')[0];
+        return `https://drive.google.com/file/d/${fileId}/preview`;
+      }
+      if (url.includes('/folders/')) {
+        const folderId = url.split('/folders/')[1].split('?')[0].split('/')[0];
+        return `https://drive.google.com/embeddedfolderview?id=${folderId}#list`;
+      }
+      return url;
+    }
+
+    function openInModal(title, rawUrl) {
+      const embeddedUrl = getEmbeddedDriveUrl(rawUrl);
+
+      document.getElementById('modalTitle').innerText = title;
+      document.getElementById('driveFrame').src = embeddedUrl;
+      document.getElementById('viewerModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeViewerModal() {
+      document.getElementById('viewerModal').classList.add('hidden');
+      document.getElementById('driveFrame').src = '';
+      document.body.style.overflow = 'auto';
+    }
+
+    function handleSearch() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      if (!query) {
+        renderExplorer();
+        return;
+      }
+
+      const grid = document.getElementById('explorerGrid');
+      grid.innerHTML = '';
+      let matchCount = 0;
+
+      Object.keys(treeData).forEach(boardName => {
+        const sections = treeData[boardName]?.sections || {};
+        Object.keys(sections).forEach(secName => {
+          const s = sections[secName];
+          // Search direct files
+          (s.files || []).forEach(file => {
+            if (file.title.toLowerCase().includes(query) || secName.toLowerCase().includes(query) || boardName.toLowerCase().includes(query)) {
+              matchCount++;
+              addSearchResultCard(grid, file, `${boardName} • ${secName}`);
+            }
+          });
+          // Search subfolders
+          Object.keys(s.subfolders || {}).forEach(subName => {
+            (s.subfolders[subName]?.files || []).forEach(file => {
+              if (file.title.toLowerCase().includes(query) || subName.toLowerCase().includes(query) || secName.toLowerCase().includes(query) || boardName.toLowerCase().includes(query)) {
+                matchCount++;
+                addSearchResultCard(grid, file, `${boardName} • ${secName} • ${subName}`);
+              }
+            });
+          });
+        });
+      });
+
+      document.getElementById('currentFolderTitle').innerHTML = `
+        <span class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"><i class="fa-solid fa-magnifying-glass text-base"></i></span> Search Results for "${query}"`;
+      document.getElementById('itemsCounter').innerText = `${matchCount} Matches`;
+
+      if (matchCount === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full glass-card rounded-2xl p-12 text-center">
+            <div class="w-16 h-16 mx-auto mb-4 bg-slate-800 rounded-2xl flex items-center justify-center text-slate-400 text-2xl">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-1">No Materials Found</h3>
+            <p class="text-xs text-slate-400 max-w-sm mx-auto">No study materials matched "${query}". Try searching with a different keyword.</p>
+          </div>
+        `;
+      }
+    }
+
+    function addSearchResultCard(grid, file, contextPath) {
+      const isAvailable = isUrl(file.link);
+      const itemIcon = getItemSpecificIcon(file.title);
+
+      const statusBadge = isAvailable 
+        ? `<span class="text-xs font-semibold px-2.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> PDF Ready</span>`
+        : `<span class="text-xs font-semibold px-2.5 py-1 bg-amber-500/10 text-amber-400 rounded-lg border border-amber-500/20 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-400"></span> Pending</span>`;
+
+      const card = document.createElement('div');
+      card.className = "glass-card p-5 rounded-2xl flex flex-col justify-between";
+
+      if (isAvailable) {
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              ${statusBadge}
+              <span class="text-xs font-semibold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-md truncate max-w-[200px]" title="${contextPath}">${contextPath}</span>
+            </div>
+            <h4 class="font-bold text-slate-100 text-base leading-snug">${file.title}</h4>
+          </div>
+          <div class="mt-5">
+            <button type="button" class="read-btn w-full py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white rounded-xl text-xs font-bold transition duration-200 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/25">
+              <i class="fa-solid fa-book-open"></i> Read Online
+            </button>
+          </div>
+        `;
+        card.querySelector('.read-btn').onclick = () => openInModal(file.title, file.link);
+      } else {
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              ${statusBadge}
+              <span class="text-xs font-medium text-slate-500 truncate max-w-[200px]" title="${contextPath}">${contextPath}</span>
+            </div>
+            <h4 class="font-bold text-slate-400 text-base leading-snug">${file.title}</h4>
+          </div>
+          <div class="mt-5 p-2.5 bg-slate-900/60 rounded-xl text-center text-xs text-slate-500 font-medium border border-slate-800">
+            PDF file uploading soon
+          </div>
+        `;
+      }
+
+      grid.appendChild(card);
+    }
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => {
+          console.warn('Service Worker registration failed:', err);
+        });
+      });
+    }
+
+    // Initialize session verification
+    checkUserSession();
+  </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<template>
+    <!-- Lightning Web Component Academic Resource Portal -->
+    <lightning-card title="LEARN WITH CHADHAR | English Resource Portal" icon-name="custom:custom55">
+        <div slot="actions">
+            <lightning-button
+                label={savedCountText}
+                icon-name="utility:favorite"
+                variant="border"
+                onclick={handleToggleSavedView}
+                class="slds-m-right_x-small">
+            </lightning-button>
+        </div>
+
+        <div class="slds-p-around_medium portal-wrapper">
+            
+            <!-- Breadcrumbs Bar -->
+            <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center slds-m-bottom_small">
+                <nav role="navigation" aria-label="Breadcrumbs">
+                    <ol class="slds-breadcrumb slds-list_horizontal slds-wrap">
+                        <template for:each={breadcrumbs} for:item="bc">
+                            <li key={bc.label} class="slds-breadcrumb__item">
+                                <template if:false={bc.isLast}>
+                                    <a href="javascript:void(0);" data-path={bc.path} onclick={handleBreadcrumbClick}>{bc.label}</a>
+                                </template>
+                                <template if:true={bc.isLast}>
+                                    <span class="slds-text-title_bold slds-p-horizontal_xx-small">{bc.label}</span>
+                                </template>
+                            </li>
+                        </template>
+                    </ol>
+                </nav>
+
+                <template if:true={canGoBack}>
+                    <lightning-button-icon
+                        icon-name="utility:back"
+                        variant="border-filled"
+                        alternative-text="Go Back"
+                        onclick={handleBack}>
+                    </lightning-button-icon>
+                </template>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="slds-m-bottom_medium">
+                <lightning-input
+                    type="search"
+                    label="Search Resources"
+                    variant="label-hidden"
+                    placeholder="Search by topic, lesson title, poem, novel, or grammar rules..."
+                    value={searchQuery}
+                    onchange={handleSearchChange}>
+                </lightning-input>
+            </div>
+
+            <!-- Quick Section Tabs -->
+            <div class="slds-m-bottom_medium section-tab-group">
+                <button class="section-chip" data-section="All" onclick={handleJumpSection}>📂 All</button>
+                <button class="section-chip" data-section="Textbook Section" onclick={handleJumpSection}>📘 Textbooks (IX-XII)</button>
+                <button class="section-chip" data-section="Poetry Section" onclick={handleJumpSection}>📜 Poetry (28 Poems)</button>
+                <button class="section-chip" data-section="Play (Fourteen)" onclick={handleJumpSection}>🎭 Play: Fourteen</button>
+                <button class="section-chip" data-section="Novel (The Pearl)" onclick={handleJumpSection}>📖 Novel: The Pearl</button>
+                <button class="section-chip" data-section="Grammar & Composition" onclick={handleJumpSection}>✍️ Grammar & Writing</button>
+            </div>
+
+            <!-- Section Title Indicator -->
+            <div class="slds-m-bottom_small slds-text-heading_small slds-text-color_weak">
+                <span>📁 {currentFolderName}</span>
+            </div>
+
+            <!-- Items Grid -->
+            <template if:true={hasItems}>
+                <div class="slds-grid slds-wrap slds-gutters_small">
+                    <template for:each={currentItems} for:item="item">
+                        <div key={item.id} class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12 slds-large-size_4-of-12 slds-m-bottom_small">
+                            
+                            <!-- Folder Card -->
+                            <template if:true={item.isFolder}>
+                                <div class="folder-card slds-box slds-box_small" data-title={item.title} onclick={handleFolderClick}>
+                                    <div class="slds-grid slds-grid_vertical-align-center">
+                                        <div class="slds-col slds-size_2-of-12 slds-text-align_center">
+                                            <lightning-icon icon-name="utility:open_folder" size="medium"></lightning-icon>
+                                        </div>
+                                        <div class="slds-col slds-size_10-of-12 slds-p-left_small">
+                                            <h3 class="slds-text-heading_small slds-truncate">{item.title}</h3>
+                                            <p class="slds-text-body_small slds-text-color_weak">Folder • Click to open</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Document / File Card -->
+                            <template if:false={item.isFolder}>
+                                <div class="document-card slds-box slds-box_small slds-theme_default">
+                                    <div class="slds-grid slds-grid_align-spread slds-m-bottom_xx-small">
+                                        <span class="file-badge">Study Note / SLO</span>
+                                        <lightning-button-icon
+                                            icon-name="utility:favorite"
+                                            variant={item.starVariant}
+                                            alternative-text="Star"
+                                            data-path={item.pathText}
+                                            onclick={handleToggleBookmark}>
+                                        </lightning-button-icon>
+                                    </div>
+                                    <h3 class="card-title slds-text-heading_small slds-m-bottom_xx-small">{item.title}</h3>
+                                    <p class="card-desc slds-text-body_small slds-m-bottom_small">{item.pathText}</p>
+                                    <div>
+                                        <a href={item.link} target="_blank" rel="noopener noreferrer" class="slds-button slds-button_brand slds-size_1-of-1">
+                                            📥 Open Resource
+                                        </a>
+                                    </div>
+                                </div>
+                            </template>
+
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Empty State -->
+            <template if:false={hasItems}>
+                <div class="slds-illustration slds-illustration_small slds-p-around_large slds-text-align_center">
+                    <div class="slds-text-heading_medium slds-m-bottom_x-small">No items found</div>
+                    <p class="slds-text-body_regular slds-m-bottom_medium">No folders or study notes match your criteria.</p>
+                    <lightning-button label="Return to Dashboard" variant="neutral" onclick={handleBreadcrumbClick}></lightning-button>
+                </div>
+            </template>
+
+        </div>
+    </lightning-card>
+</template>
